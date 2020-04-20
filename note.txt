@@ -1,0 +1,120 @@
+飞翔的小鸟
+
+  什么是微信小游戏?
+    基于微信开发,不需要下载安装即可使用的全新游戏应用
+    同时,基于微信的社交属性,让小游戏具备较强的社交传播力
+
+  小游戏的特点:
+    快速体验,用完即走,不需要像app游戏一样下载安装及卸载
+    传统的app游戏涉及大量的用户隐私窥探行为,而微信小游戏受限于微信,目前暂不存在窥探隐私行为
+    占用空间小,适合休闲类游戏,比如,棋牌
+    没有卸载残留问题
+    开发周期短,维护升级快
+    不需要考虑手机系统(iOS,Android)
+    推广方便(好友链接分享,二维码扫描,朋友圈分享)
+
+  用户体验方面:
+    碎片化时间的消磨,随时随地都可以玩一会
+    与好友互动比大部分APP方便
+
+  缺点:
+    小,内容少,特效不如APP好
+
+
+
+
+飞翔的小鸟的主要对象:
+  audio/    存放音频
+  imgs/     存放图片
+  game.js   小游戏的启动文件,程序入口文件
+  game.json 小游戏的配置文件
+  project.config.json 程序配置文件
+  Main.js   主程序,小游戏过程中的一些全局对象创建
+  js/       存放脚本
+    Director.js   导演类,用于控制游戏的逻辑,以及游戏的主循环
+    base/   存放小游戏中的基础类
+        Sprite.js  精灵的基类,是背景类,小鸟类,水管类...的父类
+        Resources.js 游戏的资源数组(存放图片等资源)
+        ResourceLoader.js 资源加载类,保证canvas是在图片加载完成以后才开始渲染
+        DataStore.js 变量池,用于存储及销毁游戏过程种的各种数据
+    player/  存放与用户相关的类
+        Birds.js  小鸟类
+        StartButton.js 游戏重新开始按钮
+        Score.js 得分类
+    runtime/  存放游戏过程中的数据
+        Background.js 背景类
+        Land.js 地板类
+        Pipe.js 水管的父类
+        UpPipe.js 上边的水管
+        DownPipe.js 下面的水管
+
+
+1. 新建index.html,模拟手机屏幕
+  设置canvas属性,引入game.js(注意加上type属性)
+  定义Main类,在其构造方法中打印游戏开始
+  然后在game.js中引入Main,并创建实例对象
+
+2. 加载图片资源
+  1) 定义Resources资源数组
+    将之后将要加载的图片资源路径提前设置好,方便后面加载器的加载
+  2) 定义加载器ResourceLoader
+    在构造方法中创建map集合 this.map = new Map(Resources);
+    到Main.js中创建资源加载器对象
+    this.loader = new ResourceLoader()
+    测试查看控制台打印输出
+  3) 在加载器的构造中,将map集合的value遍历替换为对应的img对象
+  4) 定义资源加载成功的方法
+    onloaded(callback){}
+  5) 回到Main中,测试是否能够渲染图片
+  6) 在Main中定义onResourceLoaded方法,在构造中调用
+    该方法为资源加载成功之后,将游戏过程中用到的数据保存进变量池中
+
+3. 定义变量池DataStore
+  1) 构造中定义map属性 this.map = newMap()
+  2) 分别定义put,get,destroy方法
+  3) 定义静态方法getInstance,实现单例模式,保证所有类获取到的变量池是同一个
+
+4. 在Main的构造中获取变量池
+  在资源加载成功后的方法中,将游戏过程中的数据以属性的形式绑定到变量池中
+  定义init方法,在加载成功后的方法中调用,用于初始化数据
+
+5. 定义精灵的基类(由于大部分图片都有共通点,将这些共通的东西提取到基类中)
+  Sprite.js中
+  在构造方法中初始化图片的基本数据img,srcX,srcY,srcW,srcH,x,y,width,height
+  定义draw方法,设置默认值,绘制图片
+  定义静态方法getImage,获取指定的图片
+
+6. 定义背景类,继承Sprite
+  通过Sprite获取背景图,再获取相关的数据
+  重写父类的构造,传入数据
+
+7. 在Main的init方法中创建Background对象,将其put进变量池
+
+8. 定义Land类,继承Sprite
+  构造中初始化数据,重写父类构造
+  重写父类的draw方法,实现地板的移动效果(通过x坐标的改变)
+
+9. 在Main中创建Land对象,put进变量池
+  到Director的run方法中获取该对象,并调用draw方法
+  同时在run方法中调用requestAnimationFrame方法,实现计时器的效果
+
+10. 实现水管的效果
+  父类Pipe继承Sprite
+  水管的父类构造中接收图片img与高度top参数
+  重写draw方法,实现移动效果
+  子类UpPipe,DownPipe分别继承父类Pipe
+  子类构造接收top参数,构造中分别获取对应的图片,重写父类构造,传递参数
+  子类分别重写父类draw方法,分别设置对应的y属性值
+  在Main中初始化pipes数据为空数组,用于保存多个水管对象
+  在Director中定义createPipes方法,设置最大最小top值,创建一组水管保存进水管数组
+  在run方法中判断水管的基本情况(是否出界,若出界,则删除;是否越过中间线,越过则创建)
+  然后遍历pipes数组,调用draw方法
+  在Main中调用一次createPipes方法
+
+11. 实现小鸟
+
+
+
+
+
+
